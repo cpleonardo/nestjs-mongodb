@@ -13,6 +13,8 @@ import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { ApiTags } from '@nestjs/swagger';
 import { Request } from 'express';
+import { NotFoundException } from '@nestjs/common';
+import { ParseObjectIdPipe } from '../utilities/parse-object-id-pipe.pipe';
 
 @Controller('users')
 @ApiTags('user')
@@ -31,17 +33,28 @@ export class UsersController {
   }
 
   @Get(':id')
-  async findOne(@Param('id') id: string) {
-    return this.userService.findOne(id);
+  async findOne(@Param('id', ParseObjectIdPipe) id: string) {
+    const user = await this.userService.findOne(id);
+    if (!user) {
+      throw new NotFoundException('User not found');
+    }
   }
 
   @Patch(':id')
-  async update(@Param('id') id: string, @Body() updateUserDto: UpdateUserDto) {
-    return this.userService.update(id, updateUserDto);
+  async update(@Param('id', ParseObjectIdPipe) id: string, @Body() updateUserDto: UpdateUserDto) {
+    const user = await this.userService.update(id, updateUserDto);
+    if (!user) {
+      throw new NotFoundException('User not found');
+    }
+    return user;
   }
 
   @Delete(':id')
-  async remove(@Param('id') id: string) {
-    return this.userService.remove(id);
+  async remove(@Param('id', ParseObjectIdPipe) id: string) {
+    const result = await this.userService.remove(id);
+    if (result.deletedCount === 0) {
+      throw new NotFoundException('User not found');
+    }
+    return result;
   }
 }

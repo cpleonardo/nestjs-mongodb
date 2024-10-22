@@ -29,8 +29,8 @@ export class UsersService {
 
   async update(id: string, updateUserDto: UpdateUserDto) {
     return this.userModel.findOneAndUpdate({ _id: id }, updateUserDto, {
-      new: true,
-    });
+      new: false,
+    }).exec();
   }
 
   async remove(id: string) {
